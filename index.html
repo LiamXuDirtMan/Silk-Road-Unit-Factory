@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Unit Factory — Excel → Minecraft JSON Generator</title>
+  <title>Unit Factory (Dynamic Categories)</title>
   <style>
     :root {
-      --bg:#0b1020; --panel:#121a2e; --panel2:#0f162b; --text:#eaf0ff; --muted:#aab6d6;
-      --line:rgba(255,255,255,.12); --accent:#79a6ff; --danger:#ff6b6b; --ok:#33d08a;
+      --bg:#0b1020; --text:#eaf0ff; --muted:#aab6d6; --line:rgba(255,255,255,.12);
+      --accent:#79a6ff; --danger:#ff6b6b; --ok:#33d08a;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
     }
@@ -20,7 +20,7 @@
       padding:16px 18px 12px; border-bottom:1px solid var(--line);
       background: rgba(0,0,0,.20); backdrop-filter: blur(10px);
     }
-    header h1 { margin:0 0 6px; font-size:18px; font-weight:800; letter-spacing:.2px; }
+    header h1 { margin:0 0 6px; font-size:18px; font-weight:900; }
     header p { margin:0; color:var(--muted); font-size:13px; line-height:1.4; }
     .wrap { max-width:1200px; margin:0 auto; padding:18px; }
     .grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
@@ -30,14 +30,18 @@
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
-    .card h2 { margin:0 0 10px; font-size:14px; font-weight:800; display:flex; justify-content:space-between; gap:10px; }
+    .card h2 { margin:0 0 10px; font-size:14px; font-weight:900; display:flex; justify-content:space-between; gap:10px; }
     .hint { color:var(--muted); font-weight:600; font-size:12px; }
     label { display:block; margin:10px 0 6px; color:var(--muted); font-size:12px; }
     input[type=file] { width:100%; color:var(--muted); font-size:12px; }
+    input[type=text], input[type=number] {
+      padding:10px; border-radius:12px; border:1px solid var(--line);
+      background: rgba(0,0,0,.25); color:var(--text);
+    }
     .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     button {
       border:1px solid var(--line); background: rgba(121,166,255,.12); color:var(--text);
-      padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:800;
+      padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:900;
     }
     button:hover { border-color: rgba(121,166,255,.55); }
     button.primary { background: rgba(121,166,255,.20); border-color: rgba(121,166,255,.45); }
@@ -57,7 +61,7 @@
       background: rgba(0,0,0,.18);
     }
     th, td { padding:10px 10px; font-size:12px; border-bottom:1px solid var(--line); vertical-align:top; }
-    th { text-align:left; color:var(--muted); font-weight:800; background: rgba(0,0,0,.16); position:sticky; top:0; }
+    th { text-align:left; color:var(--muted); font-weight:900; background: rgba(0,0,0,.16); position:sticky; top:0; }
     tr:last-child td { border-bottom:none; }
     code { font-family:var(--mono); font-size:11px; }
     .small { color:var(--muted); font-size:12px; line-height:1.45; }
@@ -68,28 +72,46 @@
       font-family: var(--mono); font-size:11px; line-height:1.4; overflow:auto; max-height:520px;
     }
     .kpi { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .list { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .tag {
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-family: var(--mono);
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+    .x {
+      width:18px; height:18px; border-radius:999px;
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid var(--line); cursor:pointer;
+      background: rgba(255,107,107,.12);
+      user-select:none;
+    }
+    .x:hover { border-color: rgba(255,107,107,.55); }
   </style>
 </head>
 <body>
 <header>
-  <h1>Unit Factory — Excel → Minecraft JSON Generator</h1>
-  <p>Upload your Excel sheet, review the unit summary, then generate a ZIP with <code>behaviors/</code>, <code>entity_resource/</code>, and <code>spawn_rules/</code> folders — ready to paste into your add-on.</p>
+  <h1>Unit Factory (Dynamic Categories)</h1>
+  <p>Upload Excel → generate ZIP. Add new unit categories by uploading a <code>.behavior.json</code> + <code>.entity.json</code> template (e.g., <code>flamethrower</code>, <code>grenadier</code>, <code>fighter_plane</code>).</p>
 </header>
 
 <div class="wrap">
   <div class="grid">
     <section class="card">
-      <h2>1) Inputs <span class="hint">Excel + (optional) template overrides</span></h2>
+      <h2>Inputs <span class="hint">Excel + optional Templates.zip + custom categories</span></h2>
 
       <label>Unit Factory Sheet (.xlsx)</label>
       <input id="excelFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
 
-      <label>Templates.zip (optional override)</label>
+      <label>Templates.zip (optional)</label>
       <input id="zipFile" type="file" accept=".zip,application/zip"/>
       <div class="small">
-        If you do not upload a templates ZIP, the generator uses the embedded defaults.
-        Your ZIP should contain folders for each category (soldier, archer, cavalry, horse_archer, crossbow, elephant, gunner, citizen),
-        each with one <code>*.behavior.json</code> and one <code>*.entity.json</code>, plus <code>spawn_rule.json</code>.
+        If uploaded: every top-level folder that contains both a <code>*.behavior.json</code> and <code>*.entity.json</code> becomes a category.
       </div>
 
       <div class="row" style="margin-top:12px;">
@@ -101,35 +123,43 @@
       <div class="kpi">
         <span class="pill"><span id="dotParsed" class="dot"></span> <span id="txtParsed">No sheet loaded</span></span>
         <span class="pill">units: <span id="kpiUnits">0</span></span>
-        <span class="pill">errors: <span id="kpiErrors">0</span></span>
+        <span class="pill">rows w/ errors: <span id="kpiErrors">0</span></span>
       </div>
 
-      <div class="small" style="margin-top:12px;">
-        <b>Spawn egg color note:</b> this tool reads the <i>cell fill</i> color (highlight) from the Excel columns
-        <code>Spawn Egg - Base Color</code> and <code>Spawn Egg - Overlay Color</code>. If a fill color is missing,
-        you can also type a hex like <code>#ff00aa</code> into the cell as a fallback.
+      <hr style="border:none;border-top:1px solid var(--line); margin:14px 0;" />
+
+      <h2 style="margin-top:0;">Add a category <span class="hint">upload templates</span></h2>
+      <div class="row">
+        <div style="flex:1; min-width:220px;">
+          <label style="margin-top:0;">Category name</label>
+          <input id="newCatName" type="text" placeholder="flamethrower" style="width:100%;"/>
+          <div class="small">Allowed: letters, numbers, underscore, dash.</div>
+        </div>
+        <div style="flex:1; min-width:220px;">
+          <label style="margin-top:0;">.behavior.json</label>
+          <input id="newCatBeh" type="file" accept=".json,application/json"/>
+        </div>
+        <div style="flex:1; min-width:220px;">
+          <label style="margin-top:0;">.entity.json</label>
+          <input id="newCatEnt" type="file" accept=".json,application/json"/>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button id="addCatBtn" class="primary">Add category</button>
+        <span class="small" id="catMsg">Loaded categories appear below.</span>
       </div>
 
-      <div class="small" style="margin-top:10px;">
-        Built to match your Unit Factory spec (categories, columns, folder layout, and naming convention).
-      </div>
+      <div class="small" style="margin-top:10px;"><b>Loaded categories</b></div>
+      <div id="catList" class="list"></div>
     </section>
 
     <section class="card">
-      <h2>2) Summary <span class="hint">what will be generated</span></h2>
-      <div id="summaryWrap" class="scroll">
-        <table id="summaryTable">
+      <h2>Summary <span class="hint">valid rows must match a loaded category</span></h2>
+      <div class="scroll">
+        <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Category</th>
-              <th>Identifier</th>
-              <th>Family (primary)</th>
-              <th>HP</th>
-              <th>DMG</th>
-              <th>Targets (family/tag)</th>
-              <th>Biome Tag</th>
-              <th>Errors</th>
+              <th>#</th><th>Category</th><th>Identifier</th><th>Family</th><th>HP</th><th>DMG</th><th>Targets</th><th>Biome Tag</th><th>Errors</th>
             </tr>
           </thead>
           <tbody id="summaryBody">
@@ -141,38 +171,101 @@
   </div>
 
   <section class="card" style="margin-top:14px;">
-    <h2>Preview <span class="hint">selected unit output</span></h2>
+    <h2>Preview <span class="hint">selected row output</span></h2>
     <div class="row">
       <label style="margin:0;">Preview row #</label>
-      <input id="previewIndex" type="number" min="1" value="1" style="width:100px; padding:10px; border-radius:12px; border:1px solid var(--line); background:rgba(0,0,0,.25); color:var(--text);"/>
+      <input id="previewIndex" type="number" min="1" value="1" style="width:100px;"/>
       <button id="previewBtn">Show Preview</button>
-      <span class="small">Shows behavior + client entity + spawn rule JSON for that row.</span>
+      <span class="small">Behavior + Client Entity + Spawn Rule</span>
     </div>
     <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top:10px;">
-      <div><div class="small" style="margin:0 0 6px;"><b>Behavior</b></div><pre id="preBeh">—</pre></div>
-      <div><div class="small" style="margin:0 0 6px;"><b>Client Entity</b></div><pre id="preEnt">—</pre></div>
-      <div><div class="small" style="margin:0 0 6px;"><b>Spawn Rule</b></div><pre id="preSpawn">—</pre></div>
+      <div><div class="small"><b>Behavior</b></div><pre id="preBeh">—</pre></div>
+      <div><div class="small"><b>Client Entity</b></div><pre id="preEnt">—</pre></div>
+      <div><div class="small"><b>Spawn Rule</b></div><pre id="preSpawn">—</pre></div>
     </div>
   </section>
 </div>
 
-<!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
 <script>
-  // Embedded default templates (raw text, including possible //bridge comments)
   const DEFAULT_TEMPLATES_TEXT = {"soldier": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:egyptian_mamluk\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 8\r\n                },\r\n\"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"islam\",\r\n                    \"mob\",\r\n                    \"good\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 54,\r\n                \"max\": 54\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.25\r\n},\r\n\"minecraft:attack\": {\r\n                    \"damage\": 10\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 0\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n},\r\n                \"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 4,\r\n\t\t\t\t\t\"track_target\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"bread\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"islam\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"islam\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"has_tag\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"bad\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                                \"must_see\": true,\r\n                \"must_reach\": false\r\n\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"none\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"none\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:egyptian_mamluk\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/egyptian_mamluk\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.egyptian_mamluk\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.sword_run\",\r\n\t\t\t\t\"idle\": \"animation.sword_idle\",\r\n\t\t\t\t\"attack\": \"animation.sword_attack\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\",\r\n\t\t\t\t\"attacking\": \"controller.animation.soldier.attacking\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"attacking\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#d5c258\",\r\n\t\t\t\t\"overlay_color\": \"#f2971c\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "archer": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:egyptian_archer\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n                \"minecraft:target_nearby_sensor\": {\r\n                    \"inside_range\": 3,\r\n                    \"outside_range\": 4,\r\n                    \"must_see\": true,\r\n                    \"on_inside_range\": {\r\n                        \"event\": \"switch_to_melee\",\r\n                        \"target\": \"self\"\r\n                    },\r\n                    \"on_outside_range\": {\r\n                        \"event\": \"switch_to_ranged\",\r\n                        \"target\": \"self\"\r\n                    }\r\n                }\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:shooter\": {\r\n                    \"def\": \"myname:arrow2\"\r\n                },\r\n                \"minecraft:behavior.ranged_attack\": {\r\n                    \"priority\": 3,\r\n                    \"attack_interval_min\": 1.75,\r\n                    \"attack_interval_max\": 1.75,\r\n                    \"burst_shots\": 1,\r\n                    \"speed_multiplier\": 0.8,\r\n                    \"attack_radius\": 40\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 5\r\n                },\r\n                \"minecraft:behavior.delayed_attack\": {\r\n                    \"priority\": 4,\r\n                    \"attack_once\": false,\r\n                    \"track_target\": true,\r\n                    \"require_complete_path\": false,\r\n                    \"random_stop_interval\": 0,\r\n                    \"reach_multiplier\": 1.5,\r\n                    \"speed_multiplier\": 1,\r\n                    \"attack_duration\": 0.75,\r\n                    \"hit_delay_pct\": 0.5\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"islam\",\r\n                    \"mob\",\r\n                    \"good\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 34,\r\n                \"max\": 34\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.25\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 0\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"bread\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"islam\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"islam\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"has_tag\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"bad\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                \"must_see\": true\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"bad\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"monster\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:egyptian_archer\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/egyptian_archer\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.egyptian_archer\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.archer_walk\",\r\n\t\t\t\t\"idle\": \"animation.archer_idle\",\r\n\t\t\t\t\"shoot\": \"animation.horse_archer_shoot\",\r\n\t\t\t\t\"look_at_target\": \"animation.humanoid.look_at_target.default\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#d5c258\",\r\n\t\t\t\t\"overlay_color\": \"#f2971c\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "cavalry": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:egyptian_cavalry\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 8\r\n                },\r\n\"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"islam\",\r\n                    \"mob\",\r\n                    \"good\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 58,\r\n                \"max\": 58\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.50\r\n},\r\n\"minecraft:attack\": {\r\n                    \"damage\": 12\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 0\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n},\r\n                \"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"bread\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"islam\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"islam\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"has_tag\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"bad\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                                \"must_see\": true,\r\n                \"must_reach\": false\r\n\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"none\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"none\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:egyptian_cavalry\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/egyptian_cavalry\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.egyptian_cavalry\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.heavy_cavalry_run\",\r\n\t\t\t\t\"idle\": \"animation.heavy_cavalry_idle\",\r\n\t\t\t\t\"attack\": \"animation.sword_attack\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\",\r\n\t\t\t\t\"attacking\": \"controller.animation.soldier.attacking\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"attacking\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#d5c258\",\r\n\t\t\t\t\"overlay_color\": \"#f2971c\" \r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "horse_archer": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:egyptian_horse_archer\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n                \"minecraft:target_nearby_sensor\": {\r\n                    \"inside_range\": 3,\r\n                    \"outside_range\": 4,\r\n                    \"must_see\": true,\r\n                    \"on_inside_range\": {\r\n                        \"event\": \"switch_to_melee\",\r\n                        \"target\": \"self\"\r\n                    },\r\n                    \"on_outside_range\": {\r\n                        \"event\": \"switch_to_ranged\",\r\n                        \"target\": \"self\"\r\n                    }\r\n                }\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:shooter\": {\r\n                    \"def\": \"myname:arrow2\"\r\n                },\r\n                \"minecraft:behavior.ranged_attack\": {\r\n                    \"priority\": 3,\r\n                    \"attack_interval_min\": 1.75,\r\n                    \"attack_interval_max\": 1.75,\r\n                    \"burst_shots\": 3,\r\n                    \"speed_multiplier\": 0.8,\r\n                    \"attack_radius\": 40\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 5\r\n                },\r\n                \"minecraft:behavior.delayed_attack\": {\r\n                    \"priority\": 4,\r\n                    \"attack_once\": false,\r\n                    \"track_target\": true,\r\n                    \"require_complete_path\": false,\r\n                    \"random_stop_interval\": 0,\r\n                    \"reach_multiplier\": 1.5,\r\n                    \"speed_multiplier\": 1,\r\n                    \"attack_duration\": 0.75,\r\n                    \"hit_delay_pct\": 0.5\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"islam\",\r\n                    \"mob\",\r\n                    \"good\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 54,\r\n                \"max\": 54\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.5\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 0\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"bread\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"islam\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"islam\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"has_tag\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"crusader\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"bad\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                \"must_see\": true\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"bad\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"monster\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:egyptian_horse_archer\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/egyptian_horse_archer\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.egyptian_horse_archer\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.horse_archer_run\",\r\n\t\t\t\t\"idle\": \"animation.horse_archer_idle\",\r\n\t\t\t\t\"shoot\": \"animation.horse_archer_shoot\",\r\n\t\t\t\t\"look_at_target\": \"animation.humanoid.look_at_target.default\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#d5c258\",\r\n\t\t\t\t\"overlay_color\": \"#f2971c\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "crossbow": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:chinese_crossbowman\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n                \"minecraft:target_nearby_sensor\": {\r\n                    \"inside_range\": 3,\r\n                    \"outside_range\": 4,\r\n                    \"must_see\": true,\r\n                    \"on_inside_range\": {\r\n                        \"event\": \"switch_to_melee\",\r\n                        \"target\": \"self\"\r\n                    },\r\n                    \"on_outside_range\": {\r\n                        \"event\": \"switch_to_ranged\",\r\n                        \"target\": \"self\"\r\n                    }\r\n                }\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:shooter\": {\r\n                    \"def\": \"myname:heavy_arrow\"\r\n                },\r\n                \"minecraft:behavior.ranged_attack\": {\r\n                    \"priority\": 3,\r\n                    \"attack_interval_min\": 3,\r\n                    \"attack_interval_max\": 3,\r\n                    \"burst_shots\": 1,\r\n                    \"speed_multiplier\": 0.8,\r\n                    \"attack_radius\": 40\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 5\r\n                },\r\n                \"minecraft:behavior.delayed_attack\": {\r\n                    \"priority\": 4,\r\n                    \"attack_once\": false,\r\n                    \"track_target\": true,\r\n                    \"require_complete_path\": false,\r\n                    \"random_stop_interval\": 0,\r\n                    \"reach_multiplier\": 1.5,\r\n                    \"speed_multiplier\": 1,\r\n                    \"attack_duration\": 0.75,\r\n                    \"hit_delay_pct\": 0.5\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"chinese\",\r\n                    \"mob\",\r\n                    \"good\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 24,\r\n                \"max\": 24\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.25\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 0\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"myname:rice\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"chinese\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"chinese\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"bad\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                \"must_see\": true\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"bad\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"monster\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:chinese_crossbowman\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/chinese_crossbowman\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.chinese_crossbowman\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.crossbow_walk\",\r\n\t\t\t\t\"idle\": \"animation.crossbow_idle\",\r\n\t\t\t\t\"shoot\": \"animation.crossbow_shoot\",\r\n\t\t\t\t\"look_at_target\": \"animation.humanoid.look_at_target.default\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#505050\",\r\n\t\t\t\t\"overlay_color\": \"#ff1919\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "elephant": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:delhi_war_elephant\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 8\r\n                },\r\n\"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"delhi\",\r\n                    \"mob\",\r\n                    \"bad\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 200,\r\n                \"max\": 200\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.30\r\n},\r\n\"minecraft:attack\": {\r\n                    \"damage\": 34\r\n},\r\n\"minecraft:scale\": {\r\n\t\t\t\t\"value\": 2.5\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 1\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n},\r\n                \"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\t\"speed_multiplier\": 1.1,\r\n\t\t\t\t\t\"reach_multiplier\": 2.5,\r\n\t\t\t\t\t\"track_target\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"bread\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"delhi\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"delhi\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"mongol\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n{\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"player\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"good\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                                \"must_see\": true,\r\n                \"must_reach\": false\r\n\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"none\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"none\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:delhi_war_elephant\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/delhi_war_elephant\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.delhi_war_elephant\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.elephant_walk\",\r\n\t\t\t\t\"idle\": \"animation.elephant_idle\",\r\n\t\t\t\t\"attack\": \"animation.elephant_attack\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\",\r\n\t\t\t\t\"attacking\": \"controller.animation.soldier.attacking\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"attacking\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#265d13\",\r\n\t\t\t\t\"overlay_color\": \"#ff9e00\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "gunner": {"behavior": "{\r\n    \"format_version\": \"1.16.0\",\r\n    \"minecraft:entity\": {\r\n        \"description\": {\r\n            \"identifier\": \"myname:chinese_fire_lance\",\r\n            \"is_spawnable\": true,\r\n            \"is_summonable\": true,\r\n            \"is_experimental\": false\r\n        },\r\n        \"component_groups\": {\r\n            \"x:x\": {\r\n                \"minecraft:transformation\": {\r\n                    \"into\": \"x:x\"\r\n                }\r\n            },\r\n            \"mode_switcher\": {\r\n                \"minecraft:target_nearby_sensor\": {\r\n                    \"inside_range\": 3,\r\n                    \"outside_range\": 4,\r\n                    \"must_see\": true,\r\n                    \"on_inside_range\": {\r\n                        \"event\": \"switch_to_melee\",\r\n                        \"target\": \"self\"\r\n                    },\r\n                    \"on_outside_range\": {\r\n                        \"event\": \"switch_to_ranged\",\r\n                        \"target\": \"self\"\r\n                    }\r\n                }\r\n            },\r\n            \"ranged_mode\": {\r\n                \"minecraft:shooter\": {\r\n                    \"def\": \"dungeon:bullet\"\r\n                },\r\n                \"minecraft:behavior.ranged_attack\": {\r\n                    \"priority\": 3,\r\n                    \"attack_interval_min\": 15,\r\n                    \"attack_interval_max\": 15,\r\n                    \"burst_shots\": 2,\r\n                    \"speed_multiplier\": 0.8,\r\n                    \"attack_radius\": 20\r\n                }\r\n            },\r\n            \"melee_mode\": {\r\n                \"minecraft:attack\": {\r\n                    \"damage\": 5\r\n                },\r\n                \"minecraft:behavior.delayed_attack\": {\r\n                    \"priority\": 4,\r\n                    \"attack_once\": false,\r\n                    \"track_target\": true,\r\n                    \"require_complete_path\": false,\r\n                    \"random_stop_interval\": 0,\r\n                    \"reach_multiplier\": 1.5,\r\n                    \"speed_multiplier\": 1,\r\n                    \"attack_duration\": 0.75,\r\n                    \"hit_delay_pct\": 0.5\r\n                }\r\n            }\r\n        },\r\n        \"components\": {\r\n            \"minecraft:collision_box\": {\r\n                \"height\": 1.9,\r\n                \"width\": 0.6\r\n            },\r\n            \"minecraft:type_family\": {\r\n                \"family\": [\r\n                    \"chinese\",\r\n                    \"mob\",\r\n                    \"good\"\r\n                ]\r\n            },\r\n            \"minecraft:breathable\": {\r\n                \"totalSupply\": 15,\r\n                \"suffocateTime\": 0\r\n            },\r\n            \"minecraft:health\": {\r\n                \"value\": 24,\r\n                \"max\": 24\r\n            },\r\n            \"minecraft:loot\": {\r\n                \"table\": \"loot_tables/entities/survivor_rifleman.json\"\r\n            },\r\n            \"minecraft:movement\": {\r\n                \"value\": 0.25\r\n            },\r\n            \"minecraft:knockback_resistance\": {\r\n                \"value\": 0\r\n            },\r\n            \"minecraft:sittable\": {},\r\n            \"minecraft:behavior.stay_while_sitting\": {\r\n                \"priority\": 3\r\n            },\r\n            \"minecraft:navigation.walk\": {\r\n                \"is_amphibious\": true,\r\n                \"can_pass_doors\": true,\r\n                \"can_open_doors\": true,\r\n                \"avoid_water\": true\r\n            },\r\n            \"minecraft:movement.basic\": {},\r\n            \"minecraft:jump.static\": {},\r\n            \"minecraft:can_climb\": {},\r\n            \"minecraft:nameable\": {},\r\n            \"minecraft:healable\": {\r\n                \"items\": [\r\n                    {\r\n                        \"item\": \"myname:rice\",\r\n                        \"heal_amount\": 5\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:despawn\": {\r\n                \"despawn_from_distance\": {}\r\n            },\r\n            \"minecraft:behavior.float\": {\r\n                \"priority\": 0\r\n            },\r\n            \"minecraft:damage_sensor\": {\r\n                \"triggers\": [\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"test\": \"is_family\",\r\n                                \"subject\": \"other\",\r\n                                \"value\": \"chinese\"\r\n                            }\r\n                        },\r\n                        \"deals_damage\": false\r\n                    },\r\n                    {\r\n                        \"on_damage\": {\r\n                            \"filters\": {\r\n                                \"any_of\": [\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    },\r\n                                    {\r\n                                        \"test\": \"is_family\",\r\n                                        \"subject\": \"other\",\r\n                                        \"value\": \"x\"\r\n                                    }\r\n                                ],\r\n                                \"all_of\": [\r\n                                    {\r\n                                        \"test\": \"has_damage\",\r\n                                        \"value\": \"fatal\"\r\n                                    }\r\n                                ]\r\n                            },\r\n                            \"event\": \"x:x\"\r\n                        }\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"chinese\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.nearest_attackable_target\": {\r\n                \"priority\": 2,\r\n                \"within_radius\": 64,\r\n                \"reselect_targets\": true,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"monster\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    },\r\n                    {\r\n                        \"filters\": {\r\n                            \"test\": \"is_family\",\r\n                            \"subject\": \"other\",\r\n                            \"value\": \"bad\"\r\n                        },\r\n                        \"max_dist\": 64\r\n                    }\r\n                ],\r\n                \"must_see\": true\r\n            },\r\n            \"minecraft:behavior.look_at_player\": {\r\n                \"priority\": 7,\r\n                \"look_distance\": 8\r\n            },\r\n            \"minecraft:behavior.random_look_around\": {\r\n                \"priority\": 7\r\n            },\r\n            \"minecraft:follow_range\": {\r\n                \"value\": 64\r\n            },\r\n            \"minecraft:behavior.avoid_mob_type\": {\r\n                \"priority\": 3,\r\n                \"entity_types\": [\r\n                    {\r\n                        \"filters\": {\r\n                            \"any_of\": [\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"bad\"\r\n                                },\r\n                                {\r\n                                    \"test\": \"is_family\",\r\n                                    \"subject\": \"other\",\r\n                                    \"value\": \"monster\"\r\n                                }\r\n                            ]\r\n                        },\r\n                        \"max_dist\": 6,\r\n                        \"walk_speed_multiplier\": 1,\r\n                        \"sprint_speed_multiplier\": 1\r\n                    }\r\n                ]\r\n            },\r\n            \"minecraft:behavior.owner_hurt_by_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:behavior.owner_hurt_target\": {\r\n                \"priority\": 1,\r\n                \"entity_types\": {\r\n                    \"filters\": {\r\n                        \"test\": \"is_family\",\r\n                        \"subject\": \"other\",\r\n                        \"operator\": \"!=\",\r\n                        \"value\": \"survivor\"\r\n                    },\r\n                    \"max_dist\": 64\r\n                }\r\n            },\r\n            \"minecraft:tameable\": {\r\n                \"probability\": 0.99,\r\n                \"tameItems\": [\r\n                    \"myname:90_coin\"\r\n                ],\r\n                \"tame_event\": {\r\n                    \"event\": \"minecraft:on_tame\",\r\n                    \"target\": \"self\"\r\n                }\r\n            },\r\n            \"minecraft:behavior.follow_owner\": {\r\n                \"start_distance\": 10,\r\n                \"speed_multiplier\": 1,\r\n                \"stop_distance\": 2,\r\n                \"priority\": 6\r\n            },\r\n            \"minecraft:annotation.open_door\": {},\r\n            \"minecraft:behavior.open_door\": {\r\n                \"priority\": 5,\r\n                \"close_door_after\": true\r\n            },\r\n            \"minecraft:physics\": {},\r\n            \"minecraft:pushable\": {\r\n                \"is_pushable\": true,\r\n                \"is_pushable_by_piston\": true\r\n            },\r\n            \"minecraft:equipment\": {\r\n                \"table\": \"loot_tables/empty.json\"\r\n            }\r\n        },\r\n        \"events\": {\r\n            \"x:x\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"x:x\"\r\n                    ]\r\n                }\r\n            },\r\n            \"minecraft:entity_spawned\": {\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"mode_switcher\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_melee\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                }\r\n            },\r\n            \"switch_to_ranged\": {\r\n                \"remove\": {\r\n                    \"component_groups\": [\r\n                        \"melee_mode\"\r\n                    ]\r\n                },\r\n                \"add\": {\r\n                    \"component_groups\": [\r\n                        \"ranged_mode\"\r\n                    ]\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:chinese_fire_lance\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/chinese_fire_lance\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.chinese_fire_lance\"\r\n            },\r\n      \"particle_effects\": {\r\n        \"steam\": \"dungeon:steam\",\r\n        \"steam2\": \"dungeon:steam2\",\r\n        \"flamethrower\": \"dungeon:flamethrower\"\r\n       },\r\n       \"sound_effects\": {\r\n    \"boom1\": \"musket\",\r\n    \"asia_mech\": \"asia_mech\",\r\n\"laser_beam\": \"laser_beam\",\r\n\"silo_open\": \"silo_open\",\r\n\"asia_mech_step\": \"asia_mech_step\",\r\n    \"thunder\": \"thunder1\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.firelance_walk\",\r\n\t\t\t\t\"idle\": \"animation.firelance_idle\",\r\n\t\t\t\t\"shoot\": \"animation.firelance_shoot\",\r\n\t\t\t\t\"look_at_target\": \"animation.humanoid.look_at_target.default\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#a61212\",\r\n\t\t\t\t\"overlay_color\": \"#eef882\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}, "citizen": {"behavior": "//bridge-file-version: #0\r\n{\r\n\t\"format_version\": \"1.13.0\",\r\n\t\"minecraft:entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:korean_man\",\r\n\t\t\t\"is_spawnable\": true,\r\n\t\t\t\"is_summonable\": true,\r\n\t\t\t\"is_experimental\": false\r\n\t\t},\r\n\t\t\"components\": {\r\n\t\t\t\"minecraft:experience_reward\": {\r\n\t\t\t\t\"on_death\": \"query.last_hit_by_player ? 5 + (query.equipment_count * Math.Random(1,3)) : 0\"\r\n\t\t\t},\r\n\t\t\t\"minecraft:nameable\": {},\r\n\t\t\t\"minecraft:breathable\": {\r\n\t\t\t\t\"total_supply\": 15,\r\n\t\t\t\t\"suffocate_time\": 0,\r\n\t\t\t\t\"breathes_water\": true\r\n\t\t\t},\r\n\t\t\t\"minecraft:health\": {\r\n\t\t\t\t\"value\": 20,\r\n\t\t\t\t\"max\": 20\r\n\r\n\t\t\t},\r\n\t\t\t\"minecraft:collision_box\": {\r\n\t\t\t\t\"width\": 0.72,\r\n\t\t\t\t\"height\": 2.01\r\n\t\t\t},\r\n\t\t\t\"minecraft:attack\": {\r\n\t\t\t\t\"damage\": 1\r\n\t\t\t},\r\n\t\t\t\"minecraft:loot\": {\r\n\t\t\t\t\"table\": \"loot_tables/entities/citizen.json\"\r\n\t\t\t},\r\n\t\t\t\"minecraft:equipment\": {\r\n\t\t\t\t\"table\": \"loot_tables/entities/empty.json\"\r\n\t\t\t},\r\n\t\t\t\"minecraft:movement\": {\r\n\t\t\t\t\"value\": 0.25\r\n\t\t\t},\r\n\t\t\t\"minecraft:navigation.walk\": {\r\n\t\t\t\t\"is_amphibious\": true,\r\n\t\t\t\t\"avoid_sun\": true,\r\n\t\t\t\t\"avoid_water\": true\r\n\t\t\t},\r\n\t\t\t\"minecraft:movement.basic\": {},\r\n\t\t\t\"minecraft:jump.static\": {},\r\n\t\t\t\"minecraft:can_climb\": {},\r\n\t\t\t\"minecraft:scale\": {\r\n\t\t\t\t\"value\": 1\r\n\r\n\t\t\t},\r\n\t\t\t\"minecraft:fire_immune\": true,\r\n\t\t\t\"minecraft:behavior.hurt_by_target\": {\r\n\t\t\t\t\"priority\": 1\r\n\t\t\t},\r\n\t\t\t\"minecraft:behavior.nearest_attackable_target\": {\r\n\t\t\t\t\"priority\": 2,\r\n\t\t\t\t\"reselect_targets\": true,\r\n\t\t\t\t\"entity_types\": [\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\t\"filters\": {\r\n\t\t\t\t\t\t\t\"test\": \"is_family\",\r\n\t\t\t\t\t\t\t\"subject\": \"other\",\r\n\t\t\t\t\t\t\t\"value\": \"none\"\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\t\"max_dist\": 16\r\n\t\t\t\t\t},\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\t\"filters\": {\r\n\t\t\t\t\t\t\t\"test\": \"is_family\",\r\n\t\t\t\t\t\t\t\"subject\": \"other\",\r\n\t\t\t\t\t\t\t\"value\": \"none\"\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\t\"max_dist\": 16\r\n\t\t\t\t\t},\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\t\"filters\": {\r\n\t\t\t\t\t\t\t\"all_of\": [\r\n\t\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t\t\"test\": \"is_family\",\r\n\t\t\t\t\t\t\t\t\t\"subject\": \"other\",\r\n\t\t\t\t\t\t\t\t\t\"value\": \"baby_turtle\"\r\n\t\t\t\t\t\t\t\t},\r\n\t\t\t\t\t\t\t\t{\r\n\t\t\t\t\t\t\t\t\t\"test\": \"in_water\",\r\n\t\t\t\t\t\t\t\t\t\"subject\": \"other\",\r\n\t\t\t\t\t\t\t\t\t\"operator\": \"!=\",\r\n\t\t\t\t\t\t\t\t\t\"value\": true\r\n\t\t\t\t\t\t\t\t}\r\n\t\t\t\t\t\t\t]\r\n\t\t\t\t\t\t},\r\n\t\t\t\t\t\t\"max_dist\": 16\r\n\t\t\t\t\t}\r\n\t\t\t\t],\r\n\t\t\t\t\"must_see\": true\r\n\t\t\t},\r\n\t\t\t\"minecraft:behavior.melee_attack\": {\r\n\t\t\t\t\"priority\": 4,\r\n\t\t\t\t\"target_dist\": 1.2,\r\n\t\t\t\t\"speed_multiplier\": 1.25,\r\n\t\t\t\t\"track_target\": true\r\n\t\t\t},\r\n\t\t\t\"minecraft:behavior.random_stroll\": {\r\n\t\t\t\t\"priority\": 5,\r\n\t\t\t\t\"speed_multiplier\": 1\r\n\t\t\t},\r\n\t\t\t\"minecraft:behavior.look_at_player\": {\r\n\t\t\t\t\"priority\": 6,\r\n\t\t\t\t\"look_distance\": 8\r\n\t\t\t},\r\n\t\t\t\"minecraft:behavior.random_look_around\": {\r\n\t\t\t\t\"priority\": 6\r\n\t\t\t},\r\n\t\t\t\"minecraft:type_family\": {\r\n\t\t\t\t\"family\": [\r\n\t\t\t\t\t\"villager\",\r\n\t\t\t\t\t\"korean\",\r\n\t\t\t\t\t\"neutral\",\r\n\t\t\t\t\t\"mob\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"minecraft:physics\": {},\r\n\t\t\t\"minecraft:pushable\": {\r\n\t\t\t\t\"is_pushable\": true,\r\n\t\t\t\t\"is_pushable_by_piston\": true\r\n\t\t\t}\r\n\t\t},\r\n\t\t\"events\": {\r\n\t\t\t\"minecraft:entity_spawned\": {}\r\n\t\t},\r\n\t\t\"component_groups\": {}\r\n\t}\r\n}\r\n", "entity": "{\r\n\t\"format_version\": \"1.10.0\",\r\n\t\"minecraft:client_entity\": {\r\n\t\t\"description\": {\r\n\t\t\t\"identifier\": \"myname:korean_man\",\r\n\t\t\t\"materials\": {\r\n\t\t\t\t\"default\": \"skeleton\"\r\n\t\t\t},\r\n\t\t\t\"textures\": {\r\n\t\t\t\t\"default\": \"textures/entity/korean_man\"\r\n\t\t\t},\r\n\t\t\t\"geometry\": {\r\n\t\t\t\t\"default\": \"geometry.korean_man\"\r\n\t\t\t},\r\n\t\t\t\"animations\": {\r\n\t\t\t\t\"walk\": \"animation.man_run\",\r\n\t\t\t\t\"idle\": \"animation.man_idle\",\r\n\t\t\t\t\"attack\": \"animation.man_attack\",\r\n\t\t\t\t\"walking\": \"controller.animation.soldier.walking\",\r\n\t\t\t\t\"general\": \"controller.animation.soldier.general\",\r\n\t\t\t\t\"attacking\": \"controller.animation.soldier.attacking\"\r\n\t\t\t},\r\n\t\t\t\"scripts\": {\r\n\t\t\t\t\"animate\": [\r\n\t\t\t\t\t\"walking\",\r\n\t\t\t\t\t\"general\",\r\n\t\t\t\t\t\"attacking\",\r\n\t\t\t\t\t\"look_at_target\"\r\n\t\t\t\t],\r\n\t\t\t\t\"pre_animation\": [\r\n\t\t\t\t\t\"variable.attack \\u003d Math.sin(variable.attack_time * 30.0);\"\r\n\t\t\t\t]\r\n\t\t\t},\r\n\t\t\t\"spawn_egg\": {\r\n\t\t\t\t\"base_color\": \"#4b6529\",\r\n\t\t\t\t\"overlay_color\": \"#ff9e00\"\r\n\t\t\t},\r\n\t\t\t\"render_controllers\": [\r\n\t\t\t\t\"controller.render.skeleton\"\r\n\t\t\t],\r\n\t\t\t\"enable_attachables\": true\r\n\t\t}\r\n\t}\r\n}\r\n\r\n"}};
   const DEFAULT_SPAWN_RULE_TEXT = "{\r\n  \"format_version\": \"1.8.0\",\r\n  \"minecraft:spawn_rules\": {\r\n    \"description\": {\r\n      \"identifier\": \"myname:chinese_militia\",\r\n      \"population_control\": \"monster\"\r\n    },\r\n    \"conditions\": [\r\n      {\r\n        \"minecraft:spawns_on_surface\": {},\r\n        \"minecraft:brightness_filter\": {\r\n          \"min\": 0,\r\n          \"max\": 15,\r\n          \"adjust_for_weather\": false\r\n        },\r\n        \"minecraft:difficulty_filter\": {\r\n          \"min\": \"easy\",\r\n          \"max\": \"hard\"\r\n        },\r\n        \"minecraft:weight\": {\r\n          \"default\": 5\r\n        },\r\n        \"minecraft:biome_filter\": {\r\n          \"test\": \"has_biome_tag\", \"operator\":\"==\", \"value\": \"chinese\"\r\n        }\r\n      }\r\n    ]\r\n  }\r\n}\r\n";
-  const CATEGORIES = ["soldier", "archer", "cavalry", "horse_archer", "crossbow", "elephant", "gunner", "citizen"];
+  const BASE_CATEGORIES = ["soldier", "archer", "cavalry", "horse_archer", "crossbow", "elephant", "gunner", "citizen"];
+  // ---------- Persistence (localStorage) ----------
+  // Saves ONLY custom categories (not the embedded base ones) to the current browser.
+  const STORAGE_KEY = "unit_factory_custom_categories_v1";
 
-  const ALLOWED_CATEGORIES = new Set(CATEGORIES);
+  function loadCustomCategoriesFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (!data || data.version !== 1 || typeof data.categories !== "object") return;
+
+      let loaded = 0;
+      for (const [cat, payload] of Object.entries(data.categories)) {
+        if (!cat || typeof cat !== "string") continue;
+        if (!payload || typeof payload.behaviorText !== "string" || typeof payload.entityText !== "string") continue;
+        try {
+          templates[cat] = {
+            behavior: parseJsonc(payload.behaviorText),
+            entity: parseJsonc(payload.entityText),
+          };
+          loaded++;
+        } catch (_) {
+          // Skip bad saved entries (e.g., corrupted template)
+        }
+      }
+      if (loaded) {
+        catMsg.textContent = `Loaded ${loaded} saved custom category(ies) from this browser.`;
+      }
+    } catch (_) {}
+  }
+
+  function readStorageObject() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { version: 1, categories: {} };
+      const data = JSON.parse(raw);
+      if (!data || data.version !== 1 || typeof data.categories !== "object") return { version: 1, categories: {} };
+      return data;
+    } catch (_) {
+      return { version: 1, categories: {} };
+    }
+  }
+
+  function saveStorageObject(data) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      catMsg.textContent = "Couldn't save to browser storage (blocked or full). Categories will still work for this session.";
+    }
+  }
+
+  function persistCustomCategory(cat, behaviorText, entityText) {
+    if (BASE_CATEGORIES.includes(cat)) return; // never store base categories
+    const data = readStorageObject();
+    data.categories[cat] = { behaviorText, entityText };
+    saveStorageObject(data);
+  }
+
+  function removeCustomCategoryFromStorage(cat) {
+    if (BASE_CATEGORIES.includes(cat)) return;
+    const data = readStorageObject();
+    if (data.categories && data.categories[cat]) {
+      delete data.categories[cat];
+      saveStorageObject(data);
+    }
+  }
+
+
   const REQUIRED_HEADERS = [
     "Category","ID","Family","Health","Damage","Attackable Targets, Family","Attackable Targets, Tag",
     "Texture Path","Geometry ID","Spawn Egg - Base Color","Spawn Egg - Overlay Color","Spawn Rule"
   ];
 
-  // DOM
   const excelFile = document.getElementById('excelFile');
   const zipFile = document.getElementById('zipFile');
   const parseBtn = document.getElementById('parseBtn');
@@ -190,51 +283,22 @@
   const preEnt = document.getElementById('preEnt');
   const preSpawn = document.getElementById('preSpawn');
 
-  // State
-  let templates = null;           // {category: {behavior: obj, entity: obj}}
-  let spawnRuleTemplate = null;   // obj
-  let parsedRows = [];            // normalized rows with computed values + errors
+  const newCatName = document.getElementById('newCatName');
+  const newCatBeh = document.getElementById('newCatBeh');
+  const newCatEnt = document.getElementById('newCatEnt');
+  const addCatBtn = document.getElementById('addCatBtn');
+  const catMsg = document.getElementById('catMsg');
+  const catList = document.getElementById('catList');
+
+  let templates = {};
+  let spawnRuleTemplate = null;
+  let parsedRows = [];
   let hasParsed = false;
 
   function setParsedStatus(ok, msg) {
     dotParsed.classList.remove('ok','bad');
     dotParsed.classList.add(ok ? 'ok' : 'bad');
     txtParsed.textContent = msg;
-  }
-
-  function normalizeHeader(h) {
-    return String(h || '').trim().replace(/\s+/g,' ');
-  }
-
-  function splitCsvList(v) {
-    if (v === null || v === undefined) return [];
-    const s = String(v).trim();
-    if (!s) return [];
-    return s.split(',').map(x => x.trim()).filter(Boolean);
-  }
-
-  function asNumber(v) {
-    if (v === null || v === undefined || v === '') return null;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }
-
-  function idTail(identifier) {
-    const s = String(identifier || '');
-    const parts = s.split(':');
-    return (parts.length === 2 ? parts[1] : s).trim();
-  }
-
-  function safeFilenameTail(identifier) {
-    const tail = idTail(identifier).replace(/[^a-zA-Z0-9_\-\.]/g,'_');
-    return tail || 'unit';
-  }
-
-  function argbToHex(argb) {
-    if (!argb) return null;
-    const s = String(argb).replace(/^0x/i,'').trim();
-    if (!/^[0-9a-fA-F]{8}$/.test(s)) return null;
-    return ('#' + s.substring(2)).toLowerCase(); // drop alpha
   }
 
   function parseJsonc(text) {
@@ -244,6 +308,33 @@
     return JSON.parse(t);
   }
 
+  function normalizeHeader(h) { return String(h || '').trim().replace(/\s+/g,' '); }
+  function splitCsvList(v) {
+    if (v === null || v === undefined) return [];
+    const s = String(v).trim();
+    if (!s) return [];
+    return s.split(',').map(x => x.trim()).filter(Boolean);
+  }
+  function asNumber(v) {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  function idTail(identifier) {
+    const s = String(identifier || '');
+    const parts = s.split(':');
+    return (parts.length === 2 ? parts[1] : s).trim();
+  }
+  function safeFilenameTail(identifier) {
+    const tail = idTail(identifier).replace(/[^a-zA-Z0-9_\-\.]/g,'_');
+    return tail || 'unit';
+  }
+  function argbToHex(argb) {
+    if (!argb) return null;
+    const s = String(argb).replace(/^0x/i,'').trim();
+    if (!/^[0-9a-fA-F]{8}$/.test(s)) return null;
+    return ('#' + s.substring(2)).toLowerCase();
+  }
   function guessCellHexOrNull(cell) {
     try {
       const fill = cell.fill;
@@ -256,7 +347,6 @@
         if (hx) return hx;
       }
     } catch (_) {}
-
     const v = cell.value;
     if (typeof v === 'string' && /^#?[0-9a-fA-F]{6}$/.test(v.trim())) {
       const t = v.trim();
@@ -266,10 +356,7 @@
   }
 
   function deepFindAndUpdate(obj, predicate, updater) {
-    if (Array.isArray(obj)) {
-      for (const item of obj) deepFindAndUpdate(item, predicate, updater);
-      return;
-    }
+    if (Array.isArray(obj)) { for (const item of obj) deepFindAndUpdate(item, predicate, updater); return; }
     if (obj && typeof obj === 'object') {
       if (predicate(obj)) updater(obj);
       for (const k of Object.keys(obj)) deepFindAndUpdate(obj[k], predicate, updater);
@@ -278,18 +365,13 @@
 
   function buildAttackableEntityTypes(families, tags) {
     const out = [];
-    for (const fam of families) {
-      out.push({ filters: { test:"is_family", subject:"other", value: fam }, max_dist: 64 });
-    }
-    for (const tag of tags) {
-      out.push({ filters: { test:"has_tag", subject:"other", value: tag }, max_dist: 64 });
-    }
+    for (const fam of families) out.push({ filters: { test:"is_family", subject:"other", value:fam }, max_dist: 64 });
+    for (const tag of tags) out.push({ filters: { test:"has_tag", subject:"other", value:tag }, max_dist: 64 });
     return out;
   }
 
   function applyBehaviorEdits(templateObj, row) {
     const obj = structuredClone(templateObj);
-
     try { obj["minecraft:entity"]["description"]["identifier"] = row.id; } catch (_) {}
 
     deepFindAndUpdate(obj, o => o && o["minecraft:type_family"] && Array.isArray(o["minecraft:type_family"].family), o => {
@@ -304,6 +386,7 @@
       if (row.damage !== null) o["minecraft:attack"].damage = row.damage;
     });
 
+    // Friendly fire immunity + no retaliation: update primary family
     deepFindAndUpdate(obj, o => o && o["minecraft:damage_sensor"] && Array.isArray(o["minecraft:damage_sensor"].triggers), o => {
       for (const trig of o["minecraft:damage_sensor"].triggers) {
         if (trig && trig.deals_damage === false && trig.on_damage && trig.on_damage.filters &&
@@ -329,7 +412,6 @@
             buildAttackableEntityTypes(row.targetsFamily, row.targetsTag);
         });
     }
-
     return obj;
   }
 
@@ -363,7 +445,8 @@
   function validateAndNormalizeRow(raw, rowIndex) {
     const errors = [];
     const category = String(raw.category || '').trim();
-    if (!ALLOWED_CATEGORIES.has(category)) errors.push("Invalid Category");
+    if (!category) errors.push("Missing Category");
+    else if (!templates[category]) errors.push("Unknown Category (no template loaded)");
 
     const id = String(raw.id || '').trim();
     if (!id) errors.push("Missing ID");
@@ -388,8 +471,8 @@
 
     const spawnEggBase = raw.spawnEggBase || null;
     const spawnEggOverlay = raw.spawnEggOverlay || null;
-    if (!spawnEggBase) errors.push("Missing Spawn Egg Base Color (fill or hex)");
-    if (!spawnEggOverlay) errors.push("Missing Spawn Egg Overlay Color (fill or hex)");
+    if (!spawnEggBase) errors.push("Missing Spawn Egg Base Color");
+    if (!spawnEggOverlay) errors.push("Missing Spawn Egg Overlay Color");
 
     const spawnBiomeTag = String(raw.spawnBiomeTag || '').trim();
     if (!spawnBiomeTag) errors.push("Missing Spawn Rule (biome tag)");
@@ -406,70 +489,103 @@
     };
   }
 
-  function renderSummary() {
-    summaryBody.innerHTML = "";
-    if (!parsedRows.length) {
-      summaryBody.innerHTML = `<tr><td colspan="9" class="small">No parsed rows.</td></tr>`;
-      return;
+  function renderCategoryList() {
+    const keys = Object.keys(templates).sort();
+    catList.innerHTML = "";
+    for (const k of keys) {
+      const el = document.createElement('span');
+      el.className = 'tag';
+      el.innerHTML = `<span>${k}</span> <span class="x" title="Remove category" data-cat="${k}">×</span>`;
+      catList.appendChild(el);
     }
-    for (const r of parsedRows) {
-      const err = r.errors.join("; ");
-      const tf = r.targetsFamily.join(", ");
-      const tt = r.targetsTag.join(", ");
-      const targets = `${tf || "—"} / ${tt || "—"}`;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${r.rowIndex}</td>
-        <td><code>${r.category}</code></td>
-        <td><code>${r.id}</code></td>
-        <td><code>${r.primaryFamily || "—"}</code></td>
-        <td>${r.health ?? "—"}</td>
-        <td>${r.damage ?? "—"}</td>
-        <td><code>${targets}</code></td>
-        <td><code>${r.spawnBiomeTag || "—"}</code></td>
-        <td style="color:${err ? "var(--danger)" : "var(--ok)"}">${err || "OK"}</td>
-      `;
-      summaryBody.appendChild(tr);
-    }
-  }
-
-  function updateKpis() {
-    kpiUnits.textContent = String(parsedRows.length);
-    const errCount = parsedRows.reduce((a,r)=>a+(r.errors.length?1:0),0);
-    kpiErrors.textContent = String(errCount);
-    generateBtn.disabled = !(hasParsed && errCount === 0);
+    catList.querySelectorAll('.x').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.getAttribute('data-cat');
+        if (BASE_CATEGORIES.includes(cat)) { catMsg.textContent = "Base categories can't be removed."; return; }
+        delete templates[cat];
+        removeCustomCategoryFromStorage(cat);
+        catMsg.textContent = `Removed category: ${cat}`;
+        renderCategoryList();
+        if (hasParsed) revalidateParsedRows();
+      });
+    });
   }
 
   function loadEmbeddedDefaults() {
-    const t = {};
-    for (const cat of ALLOWED_CATEGORIES) {
-      t[cat] = {
+    templates = {};
+    for (const cat of BASE_CATEGORIES) {
+      templates[cat] = {
         behavior: parseJsonc(DEFAULT_TEMPLATES_TEXT[cat].behavior),
         entity: parseJsonc(DEFAULT_TEMPLATES_TEXT[cat].entity),
       };
     }
-    templates = t;
     spawnRuleTemplate = parseJsonc(DEFAULT_SPAWN_RULE_TEXT);
+    // pull saved custom categories from this browser
+    loadCustomCategoriesFromStorage();
+    renderCategoryList();
   }
 
-  async function maybeLoadTemplatesFromZip(file) {
-    if (!file) { loadEmbeddedDefaults(); return; }
+  function sanitizeCategoryName(name) {
+    const n = String(name || '').trim();
+    if (!n) return null;
+    if (!/^[a-zA-Z0-9_\-]+$/.test(n)) return null;
+    return n;
+  }
+
+  async function addCustomCategoryFromFiles() {
+    const cat = sanitizeCategoryName(newCatName.value);
+    if (!cat) { catMsg.textContent = "Invalid category name."; return; }
+    const fBeh = newCatBeh.files?.[0];
+    const fEnt = newCatEnt.files?.[0];
+    if (!fBeh || !fEnt) { catMsg.textContent = "Upload BOTH templates."; return; }
+    try {
+      templates[cat] = {
+        behavior: parseJsonc(await fBeh.text()),
+        entity: parseJsonc(await fEnt.text())
+      };
+      catMsg.textContent = `Added category: ${cat}`;
+      renderCategoryList();
+      if (hasParsed) revalidateParsedRows();
+    } catch (e) {
+      catMsg.textContent = "Failed to parse templates: " + (e?.message || String(e));
+    }
+  }
+
+  async function loadTemplatesFromZip(file) {
+    if (!file) return;
     const buf = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(buf);
 
-    const newTemplates = {};
-    for (const cat of ALLOWED_CATEGORIES) {
-      const behPath = Object.keys(zip.files).find(p => p.startsWith(cat + "/") && p.endsWith(".behavior.json"));
-      const entPath = Object.keys(zip.files).find(p => p.startsWith(cat + "/") && p.endsWith(".entity.json"));
-      if (!behPath || !entPath) throw new Error(`Templates ZIP missing ${cat}/*.behavior.json or ${cat}/*.entity.json`);
-      const behText = await zip.files[behPath].async("string");
-      const entText = await zip.files[entPath].async("string");
-      newTemplates[cat] = { behavior: parseJsonc(behText), entity: parseJsonc(entText) };
+    const files = Object.keys(zip.files).filter(p => !zip.files[p].dir);
+    const map = {};
+    for (const p of files) {
+      const m = p.match(/^([^\/]+)\/(.+)$/);
+      if (!m) continue;
+      const cat = m[1];
+      map[cat] = map[cat] || {};
+      if (p.endsWith(".behavior.json")) map[cat].beh = p;
+      if (p.endsWith(".entity.json")) map[cat].ent = p;
     }
-    const sr = zip.files["spawn_rule.json"];
-    if (!sr) throw new Error("Templates ZIP missing spawn_rule.json");
-    spawnRuleTemplate = parseJsonc(await sr.async("string"));
-    templates = newTemplates;
+
+    let added = 0;
+    for (const [cat, v] of Object.entries(map)) {
+      if (!v.beh || !v.ent) continue;
+      try {
+        templates[cat] = {
+          behavior: parseJsonc(await zip.files[v.beh].async("string")),
+          entity: parseJsonc(await zip.files[v.ent].async("string")),
+        };
+        added++;
+      } catch (_) {}
+    }
+
+    if (zip.files["spawn_rule.json"]) {
+      try { spawnRuleTemplate = parseJsonc(await zip.files["spawn_rule.json"].async("string")); } catch (_) {}
+    }
+
+    renderCategoryList();
+    catMsg.textContent = added ? `Loaded ${added} category(ies) from ZIP.` : "ZIP loaded, but no category folders found.";
+    if (hasParsed) revalidateParsedRows();
   }
 
   async function parseExcel(file) {
@@ -517,10 +633,56 @@
         spawnEggOverlay: guessCellHexOrNull(row.getCell(col("Spawn Egg - Overlay Color"))),
         spawnBiomeTag: row.getCell(col("Spawn Rule")).value
       };
-
       out.push(validateAndNormalizeRow(raw, r-1));
     }
     return out;
+  }
+
+  function renderSummaryTable() {
+    summaryBody.innerHTML = "";
+    if (!parsedRows.length) {
+      summaryBody.innerHTML = `<tr><td colspan="9" class="small">No parsed rows.</td></tr>`;
+      return;
+    }
+    for (const r of parsedRows) {
+      const err = r.errors.join("; ");
+      const tf = r.targetsFamily.join(", ");
+      const tt = r.targetsTag.join(", ");
+      const targets = `${tf || "—"} / ${tt || "—"}`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.rowIndex}</td>
+        <td><code>${r.category || "—"}</code></td>
+        <td><code>${r.id || "—"}</code></td>
+        <td><code>${r.primaryFamily || "—"}</code></td>
+        <td>${r.health ?? "—"}</td>
+        <td>${r.damage ?? "—"}</td>
+        <td><code>${targets}</code></td>
+        <td><code>${r.spawnBiomeTag || "—"}</code></td>
+        <td style="color:${err ? "var(--danger)" : "var(--ok)"}">${err || "OK"}</td>
+      `;
+      summaryBody.appendChild(tr);
+    }
+  }
+
+  function updateKpis() {
+    kpiUnits.textContent = String(parsedRows.length);
+    const errCount = parsedRows.reduce((a,r)=>a+(r.errors.length?1:0),0);
+    kpiErrors.textContent = String(errCount);
+    generateBtn.disabled = !(hasParsed && errCount === 0);
+  }
+
+  function revalidateParsedRows() {
+    parsedRows = parsedRows.map(r => validateAndNormalizeRow({
+      category: r.category, id: r.id, family: r.familyList.join(','),
+      health: r.health, damage: r.damage,
+      targetsFamily: r.targetsFamily.join(','), targetsTag: r.targetsTag.join(','),
+      texturePath: r.texturePath, geometryId: r.geometryId,
+      spawnEggBase: r.spawnEggBase, spawnEggOverlay: r.spawnEggOverlay,
+      spawnBiomeTag: r.spawnBiomeTag
+    }, r.rowIndex));
+    renderSummaryTable();
+    updateKpis();
   }
 
   function previewRow(index1based) {
@@ -543,12 +705,12 @@
     const folderBeh = zip.folder("behaviors");
     const folderEnt = zip.folder("entity_resource");
     const folderSpawn = zip.folder("spawn_rules");
-    const reportLines = [];
+    const report = [];
 
     let okCount = 0;
     for (const row of parsedRows) {
       if (row.errors.length) {
-        reportLines.push(`Row #${row.rowIndex} (${row.id || "NO_ID"}): SKIPPED — ${row.errors.join("; ")}`);
+        report.push(`Row #${row.rowIndex} (${row.id || "NO_ID"}): SKIPPED — ${row.errors.join("; ")}`);
         continue;
       }
       const t = templates[row.category];
@@ -558,11 +720,11 @@
       okCount++;
     }
 
-    reportLines.unshift(`Unit Factory Build Report`);
-    reportLines.unshift(`Generated: ${okCount} unit(s)`);
-    reportLines.unshift(`Total rows parsed: ${parsedRows.length}`);
-    reportLines.unshift(`Timestamp: ${new Date().toISOString()}`);
-    zip.file("build_report.txt", reportLines.join("\n"));
+    report.unshift(`Unit Factory Build Report`);
+    report.unshift(`Generated: ${okCount} unit(s)`);
+    report.unshift(`Total rows parsed: ${parsedRows.length}`);
+    report.unshift(`Timestamp: ${new Date().toISOString()}`);
+    zip.file("build_report.txt", report.join("\n"));
 
     const blob = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
@@ -585,19 +747,31 @@
     parseBtn.disabled = true;
     generateBtn.disabled = true;
     preBeh.textContent = preEnt.textContent = preSpawn.textContent = "—";
+    catMsg.textContent = "Loaded categories appear below.";
+    newCatName.value = "";
+    newCatBeh.value = "";
+    newCatEnt.value = "";
   }
 
-  // Wire up
-  excelFile.addEventListener('change', () => { parseBtn.disabled = !excelFile.files?.[0]; });
+  excelFile.addEventListener('change', () => {
+    parseBtn.disabled = !excelFile.files?.[0];
+  });
+
+  zipFile.addEventListener('change', async () => {
+    if (zipFile.files?.[0]) await loadTemplatesFromZip(zipFile.files[0]);
+  });
+
+  addCatBtn.addEventListener('click', async () => {
+    await addCustomCategoryFromFiles();
+  });
 
   parseBtn.addEventListener('click', async () => {
     try {
       parseBtn.disabled = true;
-      setParsedStatus(false, "Loading…");
-      await maybeLoadTemplatesFromZip(zipFile.files?.[0] || null);
+      setParsedStatus(false, "Parsing…");
       parsedRows = await parseExcel(excelFile.files[0]);
       hasParsed = true;
-      renderSummary();
+      renderSummaryTable();
       updateKpis();
       const errCount = parsedRows.reduce((a,r)=>a+(r.errors.length?1:0),0);
       setParsedStatus(errCount === 0, errCount ? `Parsed with errors (${errCount} row(s) need fixes)` : `Parsed OK (${parsedRows.length} unit(s))`);
@@ -606,7 +780,7 @@
     } catch (e) {
       hasParsed = false;
       parsedRows = [];
-      renderSummary();
+      renderSummaryTable();
       updateKpis();
       setParsedStatus(false, "Error: " + (e?.message || String(e)));
     } finally {
@@ -614,7 +788,9 @@
     }
   });
 
-  generateBtn.addEventListener('click', async () => { await generateZip(); });
+  generateBtn.addEventListener('click', async () => {
+    await generateZip();
+  });
 
   clearBtn.addEventListener('click', () => {
     excelFile.value = "";
@@ -623,11 +799,11 @@
   });
 
   previewBtn.addEventListener('click', () => {
-    const idx = Number(previewIndex.value || 1);
-    previewRow(idx);
+    previewRow(Number(previewIndex.value || 1));
   });
 
   resetAll();
 </script>
 </body>
 </html>
+
